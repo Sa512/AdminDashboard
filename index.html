@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>صفحة البداية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background-color: #111;
+      color: #fff;
+      overflow-y: auto; /* ✅ يسمح بالتمرير */
+    }
+
+    canvas#bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: #111;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 600px;
+      margin: 50px auto;
+      box-shadow: 0 0 15px rgba(0, 255, 159, 0.4);
+      text-align: center;
+      z-index: 1;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: #00ff9f;
+    }
+
+    button, input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #00ff9f;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #00d38a;
+    }
+
+    form {
+      display: none;
+      margin-top: 15px;
+    }
+
+    p, a {
+      font-size: 0.95rem;
+    }
+
+    .link {
+      color: #00ff9f;
+      cursor: pointer;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    #loginMsg, #responseMsg {
+      min-height: 24px;
+      font-weight: 600;
+      color: #ff4c4c;
+    }
+
+    .flag {
+      width: 40px;
+      vertical-align: middle;
+    }
+
+    @media(max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <div class="container">
+    <h2>حياك الله في موقعنا 🫡 <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Flag_of_Saudi_Arabia.svg" alt="علم السعودية" class="flag"></h2>
+    <p>هل ترغب بالدخول كمستخدم أم كمشرف؟</p>
+    <button onclick="navigate('user')">👤 مستخدم للموقع</button>
+    <button onclick="navigate('admin')">🛠️ مشرف الموقع</button>
+  </div>
+
+  <!-- نموذج المستخدم -->
+  <div class="container" id="userForms" style="display:none;">
+    <h2>تسجيل الدخول أو التسجيل</h2>
+    <button onclick="showForm('login')">✅ عندي حساب</button>
+    <button onclick="showForm('register')">🆕 مستخدم جديد</button>
+
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="الإيميل" />
+      <input type="password" id="loginPassword" placeholder="كلمة المرور" />
+      <button type="button" onclick="loginUser()">تسجيل الدخول</button>
+      <span class="link" onclick="showForm('recover')">🔐 نسيت كلمة المرور؟</span>
+      <p id="loginMsg"></p>
+    </form>
+
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="الاسم" />
+      <input type="email" id="email" placeholder="الإيميل" />
+      <input type="text" id="phone" placeholder="رقم الجوال (+966...)" pattern="^\+966\d{9}$" />
+      <input type="number" id="age" placeholder="العمر" />
+      <input type="password" id="password" placeholder="كلمة المرور" />
+      <button type="button" onclick="registerUser()">إنشاء الحساب</button>
+      <p id="responseMsg"></p>
+    </form>
+
+    <form id="recoverForm">
+      <input type="text" id="recoveryInput" placeholder="أدخل الإيميل أو رقم الجوال" />
+      <button type="button" onclick="recoverPassword()">استعادة كلمة المرور</button>
+      <p id="recoveryMsg"></p>
+    </form>
+  </div>
+
+  <script>
+    // الخلفية المتحركة
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const points = Array.from({ length: 100 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      dx: Math.random() * 1,
+      dy: Math.random() * 1,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      points.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x > canvas.width || p.x < 0) p.dx *= -1;
+        if (p.y > canvas.height || p.y < 0) p.dy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,255,159,0.3)";
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // التنقل بين النماذج
+    function navigate(role) {
+      if (role === 'user') {
+        document.getElementById('userForms').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        window.location.href = "admin.html";
+      }
+    }
+
+    function showForm(type) {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('recoverForm').style.display = 'none';
+      if (type === 'login') document.getElementById('loginForm').style.display = 'block';
+      else if (type === 'register') document.getElementById('registerForm').style.display = 'block';
+      else if (type === 'recover') document.getElementById('recoverForm').style.display = 'block';
+    }
+
+    function loginUser() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      const loginMsg = document.getElementById("loginMsg");
+
+      if (!email || !password) {
+        loginMsg.textContent = "يرجى تعبئة الحقول كاملة";
+        return;
+      }
+
+      // تحقق تجريبي
+      loginMsg.textContent = "يا الحبيب، كلمة المرور أو الإيميل غير صحيحة، حاول تذكرها";
+    }
+
+    function registerUser() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const age = document.getElementById("age").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const responseMsg = document.getElementById("responseMsg");
+
+      if (!name || !email || !phone || !age || !password) {
+        responseMsg.textContent = "يرجى تعبئة جميع الحقول";
+        return;
+      }
+      responseMsg.textContent = "تم التسجيل بنجاح (تجريبي)";
+    }
+
+    function recoverPassword() {
+      const input = document.getElementById("recoveryInput").value.trim();
+      const recoveryMsg = document.getElementById("recoveryMsg");
+
+      if (!input) {
+        recoveryMsg.textContent = "يرجى إدخال الإيميل أو الجوال";
+        return;
+      }
+
+      recoveryMsg.textContent = "تم إرسال رابط الاستعادة (تجريبي)";
+    }
+  </script>
+</body>
+</html>

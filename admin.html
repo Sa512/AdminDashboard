@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>لوحة تحكم الأدمن</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background-color: #111;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    canvas#bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: #111;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 500px;
+      margin: 80px auto;
+      box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 1.7rem;
+      margin-bottom: 20px;
+      color: #00ff9f;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    input {
+      background-color: #222;
+      color: #fff;
+    }
+
+    button {
+      background-color: #00ff9f;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00d38a;
+    }
+
+    #loginMsg {
+      min-height: 24px;
+      font-weight: 600;
+      color: #ff4c4c;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+        margin-top: 40px;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- خلفية متحركة -->
+  <canvas id="bg"></canvas>
+
+  <div class="container">
+    <h2>🔐 تسجيل دخول الأدمن</h2>
+
+    <div id="loginSection">
+      <input type="text" id="emailOrPhone" placeholder="الإيميل أو رقم الجوال" autocomplete="off" />
+      <input type="password" id="password" placeholder="كلمة المرور" autocomplete="off" />
+      <button onclick="login()">تسجيل الدخول</button>
+      <p id="loginMsg"></p>
+    </div>
+  </div>
+
+  <script>
+    // خلفية متحركة بسيطة
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const particles = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      dx: (Math.random() - 0.5) * 1.5,
+      dy: (Math.random() - 0.5) * 1.5,
+    }));
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.7, 0, Math.PI * 2);
+        ctx.fillStyle = "#00ff9f";
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // تسجيل الدخول
+    const URL = "https://script.google.com/macros/s/AKfycbxlbMllJ_JKmQicFFXJU3hwiM-MKEnGo8sSaK89L8_iY8UyrZzq4TAjFWOY4XOmk9gbdw/exec";
+
+    function login() {
+      const userInput = document.getElementById("emailOrPhone").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const loginMsg = document.getElementById("loginMsg");
+
+      if (!userInput || !password) {
+        loginMsg.textContent = "يرجى إدخال جميع الحقول";
+        return;
+      }
+
+      const params = new URLSearchParams({
+        action: "getData",
+        email: userInput.includes("@") ? userInput : "",
+        phone: userInput.startsWith("966") || userInput.startsWith("+966") ? userInput.replace("+", "") : "",
+        password: password,
+      });
+
+      fetch(URL + "?" + params.toString())
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) {
+            loginMsg.textContent = "يا الحبيب، كلمة المرور أو البيانات غير صحيحة، حاول تذكرها";
+          } else {
+            // ✅ دخول صحيح → تحويل إلى صفحة الطلبات
+            window.location.href = "order.html";
+          }
+        })
+        .catch(() => {
+          loginMsg.textContent = "حدث خطأ أثناء الاتصال بالخادم";
+        });
+    }
+  </script>
+</body>
+</html>

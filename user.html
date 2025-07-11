@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>المستخدم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background-color: #111; /* خلفية سوداء ناعمة */
+      color: #fff;
+    }
+    canvas#bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: -1;
+      background: #111; /* خلفية الكانفاس */
+    }
+    .container {
+      background: rgba(0,0,0,0.65);
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 600px;
+      width: 90%;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,255,159,0.4);
+      text-align: center;
+      position: relative;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 1.9rem;
+      color: #00ff9f;
+    }
+    button, input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      background: #00ff9f;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #00d38a;
+    }
+    form {
+      display: none;
+      margin-top: 15px;
+    }
+    #loginMsg, #responseMsg {
+      min-height: 24px;
+      font-weight: 600;
+      color: #ff4c4c;
+    }
+    img.flag {
+      width: 40px;
+      vertical-align: middle;
+      border-radius: 4px;
+    }
+    @media(max-width:480px) {
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="container">
+    <h2>حياك الله في موقعنا 🫡 <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Flag_of_Saudi_Arabia.svg" alt="علم السعودية" class="flag"></h2>
+    <p>هل لديك حساب؟</p>
+    <button onclick="showForm('login')">✅ عندي حساب</button>
+    <button onclick="showForm('register')">🆕 مستخدم جديد</button>
+
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="الإيميل" required />
+      <input type="password" id="loginPassword" placeholder="كلمة المرور" required />
+      <button type="button" onclick="loginUser()">تسجيل الدخول</button>
+      <p id="loginMsg"></p>
+    </form>
+
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="الاسم" required />
+      <input type="email" id="email" placeholder="الإيميل" required />
+      <input type="text" id="phone" placeholder="رقم الجوال (+966...)" required pattern="^\+966\d{9}$" title="رقم الجوال يجب أن يبدأ بـ +966 ويتبعه 9 أرقام" />
+      <input type="number" id="age" placeholder="العمر" required min="1" max="120" />
+      <input type="password" id="password" placeholder="كلمة المرور" required />
+      <button type="button" onclick="registerUser()">إنشاء الحساب</button>
+      <p id="responseMsg"></p>
+    </form>
+  </div>
+
+<script>
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const maxPoints = 100;
+  const points = [];
+
+  function initPoints() {
+    points.length = 0;
+    for (let i = 0; i < maxPoints; i++) {
+      points.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        velocity: Math.random() * 0.5 + 0.2,
+        size: Math.random() * 1.5 + 0.5
+      });
+    }
+  }
+  initPoints();
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    points.forEach(p => {
+      p.x += p.velocity;
+      if (p.x > w) p.x = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,255,159,0.2)';
+      ctx.fill();
+    });
+
+    for(let i=0; i < points.length; i++){
+      for(let j=i+1; j < points.length; j++){
+        const p1 = points[i];
+        const p2 = points[j];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < 100){
+          ctx.strokeStyle = `rgba(0,255,159,${(1 - dist/100) * 0.1})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  // عرض النماذج
+  function showForm(type) {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginMsg').textContent = '';
+    document.getElementById('responseMsg').textContent = '';
+
+    if (type === 'login') {
+      document.getElementById('loginForm').style.display = 'block';
+    } else if (type === 'register') {
+      document.getElementById('registerForm').style.display = 'block';
+    }
+  }
+
+  // دوال تسجيل الدخول والتسجيل - اضف دوالك هنا أو أرسل لي لو تبي مساعدة
+  function loginUser() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const loginMsg = document.getElementById('loginMsg');
+
+    if(!email || !password){
+      loginMsg.textContent = "يرجى إدخال الإيميل وكلمة المرور";
+      return;
+    }
+    loginMsg.textContent تمت المحاولة (هذه دالة تجريبية فقط)";
+  }
+
+  function registerUser() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const age = document.getElementById('age').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const responseMsg = document.getElementById('responseMsg');
+
+    if (!name || !email || !phone || !age || !password) {
+      responseMsg.textContent = "يرجى إدخال جميع الحقول";
+      return;
+    }
+    // تحقق من نمط رقم الجوال
+    const phoneRegex = /^\+966\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      responseMsg.textContent = "رقم الجوال يجب أن يبدأ بـ +966 ويتبعه 9 أرقام";
+      return;
+    }
+
+    responseMsg.textContent = "تمت المحاولة (هذه دالة تجريبية فقط)";
+  }
+</script>
+</body>
+</html>
